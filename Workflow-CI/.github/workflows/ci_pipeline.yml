@@ -1,0 +1,61 @@
+name: CI Pipeline - Train & Build Docker
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-train:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install Dependencies
+      run: |
+        pip install mlflow pandas scikit-learn
+
+    # LANGKAH 4: TRAINING & TANGKAP ID DARI LOG RESMI
+    - name: Run MLflow Project (Training)
+      run: |
+        cd MLProject
+        
+        mlflow run . --env-manager=local 2>&1 | tee output_log.txt
+        
+        RUN_ID=$(cat output_log.txt | grep -o "run with ID '[a-f0-9]*'" | head -n 1 | cut -d"'" -f2)
+        
+        if [ -z "$RUN_ID" ]; then
+          echo "❌ GAGAL: Tidak bisa menemukan Run ID dari log!"
+          exit 1
+        fi
+        
+        echo "✅ Run ID ditemukan: $RUN_ID"
+        
+        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+    # LANGKAH 5: LOGIN DOCKER
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # LANGKAH 6: BUILD DOCKER (Menggunakan variable env RUN_ID)
+    - name: Build Docker Image using MLflow
+      run: |
+        cd MLProject
+        echo "Building Docker for Run ID: ${{ env.RUN_ID }}"
+        
+        mlflow models build-docker \
+          -m "runs:/${{ env.RUN_ID }}/model" \
+          -n "reditya/german-credit-model:latest"
+    
+    # LANGKAH 7: PUSH IMAGE
+    - name: Push Docker Image
+      run: |
+        docker push reditya/german-credit-model:latest
