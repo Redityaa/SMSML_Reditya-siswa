@@ -23,7 +23,7 @@ def load_data():
         raise FileNotFoundError(f"❌ File '{filename}' tidak ada di folder ini.")
 
 def main():
-    # 1. Load Data
+    # Load Data
     df = load_data()
     
     # Pastikan nama target benar
@@ -35,9 +35,8 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Setup DagsHub & MLflow
-    mlflow.set_tracking_uri(DAGSHUB_URI)
+    dagshub.init(repo_owner='Redityaa', repo_name='Submission_Sistem-Machine-Learning', mlflow=True)
     mlflow.set_experiment("Eksperimen_Tuning_Credit")
-
     print(f"📡 Tracking URI: {mlflow.get_tracking_uri()}")
 
     # Training dengan Tuning

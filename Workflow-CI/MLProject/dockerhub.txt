@@ -1,1 +1,0 @@
-https://hub.docker.com/r/reditya/german-credit-model
