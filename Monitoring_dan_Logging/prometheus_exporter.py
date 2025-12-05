@@ -21,7 +21,7 @@ INPUT_DURATION = Histogram('input_duration_month', 'Distribusi durasi peminjaman
 # Metrik Sistem (Simulasi)
 MODEL_CONFIDENCE = Gauge('model_last_confidence', 'Confidence score prediksi terakhir')
 
-# 2. LOAD MODEL
+# LOAD MODEL
 MODEL_URI = "runs:/b871f5c1723041d188b91e8311a5809d/model" 
 
 print("⏳ Sedang memuat model...")
